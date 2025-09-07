@@ -22,10 +22,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+
 # ---------------------------
 # Sidebar - Profile & Filters
 # ---------------------------
-
 st.sidebar.header("Filters")
 year_range = st.sidebar.slider(
     "Select Year Range",
@@ -34,12 +34,107 @@ year_range = st.sidebar.slider(
     value=(2000, 2024)
 )
 
-st.sidebar.header("About")
+st.sidebar.header("Who Am I ?")
+
 st.sidebar.markdown(
-    "**Name:** Mr. Kefuoe Sole  \n"
-    "**Domains:** Data Analyst / Researcher / Programmer / Web Development / Software Engineering / Cybersecurity / Artificial Intelligence / Cloud Computing /   \n"
-    "**Affiliation:** Pursuing MSc Information Systems Management / BSc in Computing: General / CCNA / HCIA / OCI / NDE / ALX   "
+    f"""
+    **Names:** Mr. Kefuoe Sole  
+
+    **From:** Botho University  
+
+    **Affiliation:**  
+    - MSc Information Systems Management (Pursuing), BSc in Computing (General) \n 
+    - CCNA, HCIA, OCI, NDE, ALX  
+    """
 )
+
+# Domains dropdown
+domains = [
+    "Data Analyst",
+    "Researcher",
+    "Programmer",
+    "Web Development",
+    "Software Engineering",
+    "Cybersecurity",
+    "Artificial Intelligence",
+    "Cloud Computing"
+]
+selected_domain = st.sidebar.selectbox("**Domains Interested**", domains)
+
+# ---------------------------
+# Custom Responsive Top Navbar with Font Awesome
+# ---------------------------
+st.markdown("""
+<!-- Load Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* Navbar container */
+.top-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    background-color: #e6f2ff; /* Updated background */
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Left section */
+.navbar-left {
+    font-weight: bold;
+    color: #003366;
+    margin-bottom: 8px;
+}
+
+/* Right section */
+.navbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Links */
+.navbar-right a {
+    display: flex;
+    align-items: center;
+    color: black;
+    text-decoration: none;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.navbar-right a:hover {
+    transform: scale(1.1);
+    color: darkblue;
+}
+
+.navbar-right i {
+    margin-right: 6px;
+}
+</style>
+
+<div class="top-navbar">
+    <div class="navbar-left">
+        🌍 Mr. Kefuoe Sole | Data Analyst / Researcher / Software Developer / Cybersecurity Consultant
+    </div>
+    <div class="navbar-right">
+        <a href="https://github.com/1923k">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/kefuoe-sole-0797061ba/">
+            <i class="fab fa-linkedin"></i> LinkedIn
+        </a>
+        <a href="#">
+            <i class="fas fa-envelope"></i> soolekefuoe2@gmail.com
+        </a>
+        <a href="tel:+26650996609">
+            <i class="fas fa-phone"></i> (+266) 50996609 / 58183915
+        </a>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 
 # ---------------------------
 # Page Title
@@ -49,6 +144,8 @@ st.markdown(
     "Tracking **Temperature**, **CO2 Emissions**, **Sea Level Rise**, "
     "and **Environmental Trends** for awareness and decision-making."
 )
+
+
 
 # ---------------------------
 # Load Dataset
