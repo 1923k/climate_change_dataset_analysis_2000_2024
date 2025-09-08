@@ -93,7 +93,7 @@ st.markdown("""
 
 <div class="top-navbar">
     <div class="navbar-left">
-        🌍 Mr. Kefuoe Sole | Data Analyst / Researcher / Software Developer / Cybersecurity Consultant
+        <i class="fa fa-user"></i> Mr. Kefuoe Sole | Data Analyst / Researcher / Software Developer / Cybersecurity Consultant
     </div>
     <div class="navbar-right">
         <a href="https://github.com/1923k"><i class="fab fa-github"></i> GitHub</a>
