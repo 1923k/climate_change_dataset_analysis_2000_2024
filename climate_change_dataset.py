@@ -65,6 +65,9 @@ st.markdown("""
 .navbar-right a { display: flex; align-items: center; color: black; text-decoration: none; transition: transform 0.2s, color 0.2s; }
 .navbar-right a:hover { transform: scale(1.1); color: darkblue; }
 .navbar-right i { margin-right: 6px; }
+.result-box {
+    background-color: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #a6c8ff;
+}
 </style>
 <div class="top-navbar">
     <div class="navbar-left">
@@ -151,147 +154,61 @@ else:
     col2.metric("Avg CO2 Emissions (Tons/Capita)", f"{df_filtered['CO2 Emissions (Tons/Capita)'].mean():.2f}")
     col3.metric("Avg Extreme Weather Events", f"{df_filtered['Extreme Weather Events'].mean():.2f}")
 
+    def display_chart_with_trendline(x_col, y_col, chart_title, y_label=None):
+        y_label = y_label or y_col
+        fig = px.scatter(df_filtered, x=x_col, y=y_col, trendline="ols", hover_data={x_col: True, y_col: True})
+        results = px.get_trendline_results(fig)
+        slope = results.iloc[0]["px_fit_results"].params[1]
+        intercept = results.iloc[0]["px_fit_results"].params[0]
+        min_val = df_filtered[y_col].min()
+        max_val = df_filtered[y_col].max()
+        mean_val = df_filtered[y_col].mean()
+        fig.update_layout(title=chart_title)
+
+        # Display chart and trendline info
+        col_chart, col_info = st.columns([3, 1])
+        col_chart.plotly_chart(fig, use_container_width=True)
+        col_info.markdown(f"""
+        <div class="result-box">
+        <b>{chart_title}</b><br>
+        <b>Trendline:</b> y = {slope:.4f}x + {intercept:.2f}<br>
+        <b>Slope:</b> {slope:.4f}<br>
+        <b>Intercept:</b> {intercept:.2f}<br>
+        <b>Min {y_label}:</b> {min_val:.2f}<br>
+        <b>Max {y_label}:</b> {max_val:.2f}<br>
+        <b>Mean {y_label}:</b> {mean_val:.2f}
+        </div>
+        """, unsafe_allow_html=True)
+
+        return slope
+
     # ---------------------------
     # Result 1: Global Temperature Trend
     # ---------------------------
     st.subheader("Result 1: Global Average Temperature Trend")
-    try:
-        fig_temp = px.scatter(
-            df_filtered, x='Year', y='Avg Temperature (°C)',
-            trendline="ols",
-            hover_data={'Year': True, 'Avg Temperature (°C)': True},
-            labels={'Year': 'Year (2000–2024)', 'Avg Temperature (°C)': 'Avg Temp (°C)'},
-            title="Global Average Temperature Trend"
-        )
-
-        results_temp = px.get_trendline_results(fig_temp)
-        slope_temp = results_temp.iloc[0]["px_fit_results"].params[1]
-        intercept_temp = results_temp.iloc[0]["px_fit_results"].params[0]
-
-        for trace in fig_temp.data:
-            if trace.name == "ols":
-                trace.hovertemplate = (
-                    "Year: %{x}<br>"
-                    "Predicted Temp: %{y:.2f} °C<br>"
-                    f"Slope: {slope_temp:.4f} °C/year<br>"
-                    f"Intercept: {intercept_temp:.2f} °C"
-                )
-
-        st.plotly_chart(fig_temp, use_container_width=True)
-        st.markdown(
-            f"**Interpretation:** The global average temperature has increased steadily, "
-            f"with a warming rate of ~**{slope_temp:.4f} °C per year**."
-        )
-    except Exception as e:
-        st.error("Could not generate Global Temperature Trend graph.")
+    slope_temp = display_chart_with_trendline('Year', 'Avg Temperature (°C)', 'Global Average Temperature Trend', 'Temperature (°C)')
 
     # ---------------------------
     # Result 2: CO2 vs Temperature
     # ---------------------------
     st.subheader("Result 2: CO2 Emissions vs Avg Temperature")
-    try:
-        y = df_filtered['Avg Temperature (°C)']
-        X = df_filtered[['CO2 Emissions (Tons/Capita)']]
-        model_co2 = LinearRegression().fit(X, y)
-
-        fig_co2 = px.scatter(
-            df_filtered, x='CO2 Emissions (Tons/Capita)', y='Avg Temperature (°C)',
-            trendline="ols",
-            hover_data={'CO2 Emissions (Tons/Capita)': True, 'Avg Temperature (°C)': True},
-            title="CO2 Emissions vs Avg Temperature"
-        )
-        st.plotly_chart(fig_co2, use_container_width=True)
-
-        st.markdown(
-            f"**Interpretation:** Higher CO2 emissions are strongly linked to higher temperatures. "
-            f"Each additional 1 ton/capita CO2 relates to ~**{model_co2.coef_[0]:.4f} °C** increase."
-        )
-    except:
-        st.error("Could not generate CO2 vs Temperature graph.")
+    slope_co2 = display_chart_with_trendline('CO2 Emissions (Tons/Capita)', 'Avg Temperature (°C)', 'CO2 Emissions vs Avg Temperature')
 
     # ---------------------------
     # Result 3: Sea Level Rise
     # ---------------------------
     st.subheader("Result 3: Sea Level Rise Over Time")
-    try:
-        fig_sea = px.scatter(
-            df_filtered, x='Year', y='Sea Level Rise (mm)',
-            trendline="ols",
-            hover_data={'Year': True, 'Sea Level Rise (mm)': True},
-            labels={'Year': 'Year (2000–2024)', 'Sea Level Rise (mm)': 'Sea Level (mm)'},
-            title="Sea Level Rise Over Time"
-        )
-
-        results_sea = px.get_trendline_results(fig_sea)
-        slope_sea = results_sea.iloc[0]["px_fit_results"].params[1]
-        intercept_sea = results_sea.iloc[0]["px_fit_results"].params[0]
-
-        for trace in fig_sea.data:
-            if trace.name == "ols":
-                trace.hovertemplate = (
-                    "Year: %{x}<br>"
-                    "Predicted Sea Level: %{y:.2f} mm<br>"
-                    f"Slope: {slope_sea:.4f} mm/year<br>"
-                    f"Intercept: {intercept_sea:.2f} mm"
-                )
-
-        st.plotly_chart(fig_sea, use_container_width=True)
-        st.markdown(
-            f"**Interpretation:** Sea levels are rising by ~**{slope_sea:.4f} mm/year**, "
-            "posing threats to coastal areas."
-        )
-    except:
-        st.error("Could not generate Sea Level Rise graph.")
+    slope_sea = display_chart_with_trendline('Year', 'Sea Level Rise (mm)', 'Sea Level Rise Over Time', 'Sea Level (mm)')
 
     # ---------------------------
     # Result 4: Extreme Weather vs CO2
     # ---------------------------
     st.subheader("Result 4: Extreme Weather Events vs CO2 Emissions")
-    try:
-        fig_extreme = px.scatter(
-            df_filtered, x='CO2 Emissions (Tons/Capita)', y='Extreme Weather Events',
-            trendline="ols",
-            hover_data={'CO2 Emissions (Tons/Capita)': True, 'Extreme Weather Events': True},
-            title="Extreme Weather Events vs CO2 Emissions"
-        )
-        st.plotly_chart(fig_extreme, use_container_width=True)
-
-        corr = df_filtered['CO2 Emissions (Tons/Capita)'].corr(df_filtered['Extreme Weather Events'])
-        st.markdown(
-            f"**Interpretation:** Extreme weather events increase with CO2 emissions. "
-            f"The correlation is **{corr:.2f}**, showing a strong positive relationship."
-        )
-    except:
-        st.error("Could not generate Extreme Weather Events graph.")
+    slope_extreme = display_chart_with_trendline('CO2 Emissions (Tons/Capita)', 'Extreme Weather Events', 'Extreme Weather Events vs CO2 Emissions')
 
     # ---------------------------
-    # Result 5: Renewable Energy & Forest Area
+    # Result 5: Renewable Energy & Forest Area vs CO2
     # ---------------------------
     st.subheader("Result 5: Renewable Energy & Forest Area vs CO2 Emissions")
-    try:
-        coef_renew = LinearRegression().fit(df_filtered[['Renewable Energy (%)']], df_filtered['CO2 Emissions (Tons/Capita)']).coef_[0]
-        coef_forest = LinearRegression().fit(df_filtered[['Forest Area (%)']], df_filtered['CO2 Emissions (Tons/Capita)']).coef_[0]
-
-        fig_renew = px.scatter(
-            df_filtered, x='Renewable Energy (%)', y='CO2 Emissions (Tons/Capita)',
-            trendline="ols",
-            hover_data={'Renewable Energy (%)': True, 'CO2 Emissions (Tons/Capita)': True},
-            title="Renewable Energy vs CO2 Emissions"
-        )
-        fig_forest = px.scatter(
-            df_filtered, x='Forest Area (%)', y='CO2 Emissions (Tons/Capita)',
-            trendline="ols",
-            hover_data={'Forest Area (%)': True, 'CO2 Emissions (Tons/Capita)': True},
-            title="Forest Area vs CO2 Emissions"
-        )
-
-        col1, col2 = st.columns(2)
-        col1.plotly_chart(fig_renew, use_container_width=True)
-        col2.plotly_chart(fig_forest, use_container_width=True)
-
-        st.markdown(
-            f"**Interpretation:** More renewable energy use reduces CO2 by ~**{abs(coef_renew):.4f} tons/capita per % increase**. "
-            f"Expanding forest area cuts emissions by ~**{abs(coef_forest):.4f} tons/capita per % increase**."
-        )
-    except:
-        st.error("Could not generate Renewable Energy & Forest Area graphs.")
+    slope_renew = display_chart_with_trendline('Renewable Energy (%)', 'CO2 Emissions (Tons/Capita)', 'Renewable Energy vs CO2 Emissions')
+    slope_forest = display_chart_with_trendline('Forest Area (%)', 'CO2 Emissions (Tons/Capita)', 'Forest Area vs CO2 Emissions')
