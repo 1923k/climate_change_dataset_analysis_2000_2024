@@ -13,14 +13,18 @@ import seaborn as sns
 
 sns.set(style="whitegrid")
 
+# ---------------------------
 # Streamlit Page Config
+# ---------------------------
 st.set_page_config(
     page_title="By: Kefuoe Sole - Climate Change Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# ---------------------------
 # Sidebar - Profile & Filters
+# ---------------------------
 st.sidebar.header("Filters")
 year_range = st.sidebar.slider(
     "Select Year Range",
@@ -30,67 +34,38 @@ year_range = st.sidebar.slider(
 )
 
 st.sidebar.header("Who Am I ?")
-st.sidebar.markdown(
-    """
-    **Names:** Mr. Kefuoe Sole  
+st.sidebar.markdown("""
+**Names:** Mr. Kefuoe Sole  
 
-    **From:** Botho University  
+**From:** Botho University  
 
-    **Affiliation:**  
-    - MSc Information Systems Management (Pursuing), BSc in Computing (General)  
-    - CCNA, HCIA, OCI, NDE, ALX  
-    """
-)
+**Affiliation:**  
+- MSc Information Systems Management (Pursuing), BSc in Computing (General)  
+- CCNA, HCIA, OCI, NDE, ALX  
+""")
 
-# Domains dropdown
 domains = [
     "Data Analyst", "Researcher", "Programmer", "Web Development",
     "Software Engineering", "Cybersecurity", "Artificial Intelligence", "Cloud Computing"
 ]
 selected_domain = st.sidebar.selectbox("**Domains Interested**", domains)
 
+# ---------------------------
 # Custom Top Navbar
+# ---------------------------
 st.markdown("""
-<!-- Load Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
 .top-navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    background-color: #e6f2ff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 16px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+    background-color: #e6f2ff; padding: 10px 20px; border-radius: 8px; font-size: 16px;
 }
-.navbar-left {
-    font-weight: bold;
-    color: #003366;
-    margin-bottom: 8px;
-}
-.navbar-right {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-.navbar-right a {
-    display: flex;
-    align-items: center;
-    color: black;
-    text-decoration: none;
-    transition: transform 0.2s, color 0.2s;
-}
-.navbar-right a:hover {
-    transform: scale(1.1);
-    color: darkblue;
-}
-.navbar-right i {
-    margin-right: 6px;
-}
+.navbar-left { font-weight: bold; color: #003366; margin-bottom: 8px; }
+.navbar-right { display: flex; flex-wrap: wrap; gap: 15px; }
+.navbar-right a { display: flex; align-items: center; color: black; text-decoration: none; transition: transform 0.2s, color 0.2s; }
+.navbar-right a:hover { transform: scale(1.1); color: darkblue; }
+.navbar-right i { margin-right: 6px; }
 </style>
-
 <div class="top-navbar">
     <div class="navbar-left">
         <i class="fa fa-user"></i> Mr. Kefuoe Sole | Data Analyst / Researcher / Software Developer / Cybersecurity Consultant
@@ -104,13 +79,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ---------------------------
 # Page Title
+# ---------------------------
 st.title("Climate Change Dataset Analysis (2000–2024)")
 st.markdown(
     "Tracking **Temperature**, **CO2 Emissions**, **Sea Level Rise**, "
     "and **Environmental Trends** for awareness and decision-making."
 )
 
+# ---------------------------
+# Load Dataset from Google Drive
+# ---------------------------
 file_id = "1iT3zJQHLDVvWE3haqG36E9Fb2La59bHi"
 url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
@@ -119,7 +99,7 @@ try:
     st.success("Dataset loaded successfully!")
 except FileNotFoundError:
     st.error("File not found. Please check the Google Drive file ID or link.")
-    df = pd.DataFrame()  # create empty DataFrame to avoid further errors
+    df = pd.DataFrame()
 except pd.errors.EmptyDataError:
     st.error("The file is empty. Please check your dataset.")
     df = pd.DataFrame()
@@ -130,31 +110,50 @@ except Exception as e:
     st.error(f"An unexpected error occurred while loading the dataset: {e}")
     df = pd.DataFrame()
 
-# Ensure Year is integer
-df['Year'] = pd.to_numeric(df['Year'], errors='coerce').astype(int)
+# ---------------------------
+# Clean and Prepare Dataset
+# ---------------------------
+if not df.empty:
+    try:
+        df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
+        essential_cols = [
+            'Year', 'Avg Temperature (°C)', 'CO2 Emissions (Tons/Capita)',
+            'Renewable Energy (%)', 'Forest Area (%)',
+            'Extreme Weather Events', 'Sea Level Rise (mm)'
+        ]
+        df = df.dropna(subset=essential_cols)
+        df['Year'] = df['Year'].astype(int)
+        df = df.sort_values(by='Year').reset_index(drop=True)
+        st.success("Dataset cleaned and sorted by Year successfully!")
+    except KeyError as ke:
+        st.error(f"Dataset is missing expected column: {ke}")
+        df = pd.DataFrame()
+    except Exception as e:
+        st.error(f"An error occurred during dataset cleaning: {e}")
+        df = pd.DataFrame()
+else:
+    st.warning("No dataset available to clean or sort.")
 
-# Drop rows with missing data
-df = df.dropna(subset=[
-    'Year', 'Avg Temperature (°C)', 'CO2 Emissions (Tons/Capita)',
-    'Renewable Energy (%)', 'Forest Area (%)',
-    'Extreme Weather Events', 'Sea Level Rise (mm)'
-])
-
-# Filter dataset by year range
+# ---------------------------
+# Filter by Year Range
+# ---------------------------
 df_filtered = df[(df['Year'] >= year_range[0]) & (df['Year'] <= year_range[1])]
 
-# If no data, show warning
 if df_filtered.empty:
     st.warning("No data available for the selected year range. Please adjust the slider.")
 else:
+    # ---------------------------
     # Key Metrics
+    # ---------------------------
     st.subheader("Key Metrics")
     col1, col2, col3 = st.columns(3)
     col1.metric("Avg Temperature (°C)", f"{df_filtered['Avg Temperature (°C)'].mean():.2f}")
     col2.metric("Avg CO2 Emissions (Tons/Capita)", f"{df_filtered['CO2 Emissions (Tons/Capita)'].mean():.2f}")
     col3.metric("Avg Extreme Weather Events", f"{df_filtered['Extreme Weather Events'].mean():.2f}")
 
+    # ---------------------------
     # Result 1: Global Temperature Trend
+    # ---------------------------
     st.subheader("Result 1: Global Average Temperature Trend")
     try:
         fig_temp = px.scatter(
@@ -165,12 +164,10 @@ else:
             title="Global Average Temperature Trend"
         )
 
-        # Get regression results
         results_temp = px.get_trendline_results(fig_temp)
         slope_temp = results_temp.iloc[0]["px_fit_results"].params[1]
         intercept_temp = results_temp.iloc[0]["px_fit_results"].params[0]
 
-        # Update regression line hover
         for trace in fig_temp.data:
             if trace.name == "ols":
                 trace.hovertemplate = (
@@ -186,9 +183,11 @@ else:
             f"with a warming rate of ~**{slope_temp:.4f} °C per year**."
         )
     except Exception as e:
-        st.error(f"Could not generate Global Temperature Trend: {e}")
+        st.error("Could not generate Global Temperature Trend graph.")
 
+    # ---------------------------
     # Result 2: CO2 vs Temperature
+    # ---------------------------
     st.subheader("Result 2: CO2 Emissions vs Avg Temperature")
     try:
         y = df_filtered['Avg Temperature (°C)']
@@ -207,10 +206,12 @@ else:
             f"**Interpretation:** Higher CO2 emissions are strongly linked to higher temperatures. "
             f"Each additional 1 ton/capita CO2 relates to ~**{model_co2.coef_[0]:.4f} °C** increase."
         )
-    except Exception as e:
-        st.error(f"Could not generate CO2 vs Temperature: {e}")
+    except:
+        st.error("Could not generate CO2 vs Temperature graph.")
 
+    # ---------------------------
     # Result 3: Sea Level Rise
+    # ---------------------------
     st.subheader("Result 3: Sea Level Rise Over Time")
     try:
         fig_sea = px.scatter(
@@ -221,12 +222,10 @@ else:
             title="Sea Level Rise Over Time"
         )
 
-        # Get regression results
         results_sea = px.get_trendline_results(fig_sea)
         slope_sea = results_sea.iloc[0]["px_fit_results"].params[1]
         intercept_sea = results_sea.iloc[0]["px_fit_results"].params[0]
 
-        # Update regression line hover
         for trace in fig_sea.data:
             if trace.name == "ols":
                 trace.hovertemplate = (
@@ -241,10 +240,12 @@ else:
             f"**Interpretation:** Sea levels are rising by ~**{slope_sea:.4f} mm/year**, "
             "posing threats to coastal areas."
         )
-    except Exception as e:
-        st.error(f"Could not generate Sea Level Rise: {e}")
+    except:
+        st.error("Could not generate Sea Level Rise graph.")
 
+    # ---------------------------
     # Result 4: Extreme Weather vs CO2
+    # ---------------------------
     st.subheader("Result 4: Extreme Weather Events vs CO2 Emissions")
     try:
         fig_extreme = px.scatter(
@@ -260,10 +261,12 @@ else:
             f"**Interpretation:** Extreme weather events increase with CO2 emissions. "
             f"The correlation is **{corr:.2f}**, showing a strong positive relationship."
         )
-    except Exception as e:
-        st.error(f"Could not generate Extreme Weather Events plot: {e}")
+    except:
+        st.error("Could not generate Extreme Weather Events graph.")
 
+    # ---------------------------
     # Result 5: Renewable Energy & Forest Area
+    # ---------------------------
     st.subheader("Result 5: Renewable Energy & Forest Area vs CO2 Emissions")
     try:
         coef_renew = LinearRegression().fit(df_filtered[['Renewable Energy (%)']], df_filtered['CO2 Emissions (Tons/Capita)']).coef_[0]
@@ -290,5 +293,5 @@ else:
             f"**Interpretation:** More renewable energy use reduces CO2 by ~**{abs(coef_renew):.4f} tons/capita per % increase**. "
             f"Expanding forest area cuts emissions by ~**{abs(coef_forest):.4f} tons/capita per % increase**."
         )
-    except Exception as e:
-        st.error(f"Could not generate Renewable Energy & Forest Area plots: {e}")
+    except:
+        st.error("Could not generate Renewable Energy & Forest Area graphs.")
