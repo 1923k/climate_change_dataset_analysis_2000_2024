@@ -67,7 +67,10 @@ st.markdown("""
 .navbar-right i { margin-right: 6px; }
 .result-box {
     background-color: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px solid #a6c8ff;
+    font-size: 14px; line-height: 1.6;
 }
+.result-title { font-weight: bold; font-size: 16px; color: #003366; margin-bottom: 8px; }
+.result-year { color: #ff4500; font-weight: bold; }
 </style>
 <div class="top-navbar">
     <div class="navbar-left">
@@ -154,6 +157,9 @@ else:
     col2.metric("Avg CO2 Emissions (Tons/Capita)", f"{df_filtered['CO2 Emissions (Tons/Capita)'].mean():.2f}")
     col3.metric("Avg Extreme Weather Events", f"{df_filtered['Extreme Weather Events'].mean():.2f}")
 
+    # ---------------------------
+    # Function to Display Chart with Trendline & Results
+    # ---------------------------
     def display_chart_with_trendline(x_col, y_col, chart_title, y_label=None):
         y_label = y_label or y_col
         fig = px.scatter(df_filtered, x=x_col, y=y_col, trendline="ols", hover_data={x_col: True, y_col: True})
@@ -170,7 +176,8 @@ else:
         col_chart.plotly_chart(fig, use_container_width=True)
         col_info.markdown(f"""
         <div class="result-box">
-        <b>{chart_title}</b><br>
+        <div class="result-title">{chart_title}</div>
+        <b>Year Range:</b> <span class="result-year">{year_range[0]} – {year_range[1]}</span><br>
         <b>Trendline:</b> y = {slope:.4f}x + {intercept:.2f}<br>
         <b>Slope:</b> {slope:.4f}<br>
         <b>Intercept:</b> {intercept:.2f}<br>
