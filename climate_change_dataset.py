@@ -88,7 +88,7 @@ st.markdown("""
 # ---------------------------
 # Page Title
 # ---------------------------
-st.title("Climate Change Dataset Analysis (2000–2024)")
+st.title("Global Climate Change Indicators: A Comprehensive Dataset (2000-2024) ")
 st.markdown(
     "Tracking **Temperature**, **CO2 Emissions**, **Sea Level Rise**, "
     "and **Environmental Trends** for awareness and decision-making."
