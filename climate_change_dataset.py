@@ -13,18 +13,16 @@ import seaborn as sns
 
 sns.set(style="whitegrid")
 
-# ---------------------------
+
 # Streamlit Page Config
-# ---------------------------
 st.set_page_config(
     page_title="By: Kefuoe Sole - Climate Change Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ---------------------------
+
 # Sidebar - Profile & Filters
-# ---------------------------
 st.sidebar.header("Filters")
 year_range = st.sidebar.slider(
     "Select Year Range",
@@ -50,9 +48,9 @@ domains = [
 ]
 selected_domain = st.sidebar.selectbox("**Domains Interested**", domains)
 
-# ---------------------------
+
+
 # Custom Top Navbar
-# ---------------------------
 st.markdown("""
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -85,18 +83,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------------------
+
 # Page Title
-# ---------------------------
 st.title("Global Climate Change Indicators: A Comprehensive Dataset (2000-2024) ")
 st.markdown(
     "Tracking **Temperature**, **CO2 Emissions**, **Sea Level Rise**, "
     "and **Environmental Trends** for awareness and decision-making."
 )
 
-# ---------------------------
-# Load Dataset from Google Drive
-# ---------------------------
+
+# Loading Dataset
 file_id = "1iT3zJQHLDVvWE3haqG36E9Fb2La59bHi"
 url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
@@ -116,9 +112,8 @@ except Exception as e:
     st.error(f"An unexpected error occurred while loading the dataset: {e}")
     df = pd.DataFrame()
 
-# ---------------------------
+
 # Clean and Prepare Dataset
-# ---------------------------
 if not df.empty:
     try:
         df['Year'] = pd.to_numeric(df['Year'], errors='coerce')
@@ -140,26 +135,23 @@ if not df.empty:
 else:
     st.warning("No dataset available to clean or sort.")
 
-# ---------------------------
+
 # Filter by Year Range
-# ---------------------------
 df_filtered = df[(df['Year'] >= year_range[0]) & (df['Year'] <= year_range[1])]
 
 if df_filtered.empty:
     st.warning("No data available for the selected year range. Please adjust the slider.")
 else:
-    # ---------------------------
+  
     # Key Metrics
-    # ---------------------------
     st.subheader("Key Metrics")
     col1, col2, col3 = st.columns(3)
     col1.metric("Avg Temperature (°C)", f"{df_filtered['Avg Temperature (°C)'].mean():.2f}")
     col2.metric("Avg CO2 Emissions (Tons/Capita)", f"{df_filtered['CO2 Emissions (Tons/Capita)'].mean():.2f}")
     col3.metric("Avg Extreme Weather Events", f"{df_filtered['Extreme Weather Events'].mean():.2f}")
 
-    # ---------------------------
+  
     # Function to Display Chart with Trendline & Results
-    # ---------------------------
     def display_chart_with_trendline(x_col, y_col, chart_title, y_label=None):
         y_label = y_label or y_col
         fig = px.scatter(df_filtered, x=x_col, y=y_col, trendline="ols", hover_data={x_col: True, y_col: True})
@@ -189,33 +181,28 @@ else:
 
         return slope
 
-    # ---------------------------
+
     # Result 1: Global Temperature Trend
-    # ---------------------------
     st.subheader("Result 1: Global Average Temperature Trend")
     slope_temp = display_chart_with_trendline('Year', 'Avg Temperature (°C)', 'Global Average Temperature Trend', 'Temperature (°C)')
 
-    # ---------------------------
+
     # Result 2: CO2 vs Temperature
-    # ---------------------------
     st.subheader("Result 2: CO2 Emissions vs Avg Temperature")
     slope_co2 = display_chart_with_trendline('CO2 Emissions (Tons/Capita)', 'Avg Temperature (°C)', 'CO2 Emissions vs Avg Temperature')
 
-    # ---------------------------
+  
     # Result 3: Sea Level Rise
-    # ---------------------------
     st.subheader("Result 3: Sea Level Rise Over Time")
     slope_sea = display_chart_with_trendline('Year', 'Sea Level Rise (mm)', 'Sea Level Rise Over Time', 'Sea Level (mm)')
 
-    # ---------------------------
+
     # Result 4: Extreme Weather vs CO2
-    # ---------------------------
     st.subheader("Result 4: Extreme Weather Events vs CO2 Emissions")
     slope_extreme = display_chart_with_trendline('CO2 Emissions (Tons/Capita)', 'Extreme Weather Events', 'Extreme Weather Events vs CO2 Emissions')
 
-    # ---------------------------
+   
     # Result 5: Renewable Energy & Forest Area vs CO2
-    # ---------------------------
     st.subheader("Result 5: Renewable Energy & Forest Area vs CO2 Emissions")
     slope_renew = display_chart_with_trendline('Renewable Energy (%)', 'CO2 Emissions (Tons/Capita)', 'Renewable Energy vs CO2 Emissions')
     slope_forest = display_chart_with_trendline('Forest Area (%)', 'CO2 Emissions (Tons/Capita)', 'Forest Area vs CO2 Emissions')
